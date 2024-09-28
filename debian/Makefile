@@ -77,6 +77,7 @@ BASE_CONFIGURE_ARGS=\
 	--with-http_auth_request_module \
 	--with-http_dav_module \
 	--with-http_flv_module \
+	--add-module=$(shell git clone https://github.com/wy414012/ngx-fancyindex.git && pwd)/ngx-fancyindex \ 
 	--with-http_gunzip_module \
 	--with-http_gzip_static_module \
 	--with-http_mp4_module \
@@ -464,7 +465,7 @@ check-modules:
 	}
 
 clean:
-	@rm -rf base module-* rules-base rules-module-* debuild-base debuild-module-* nginx-tests $(BASE_SRC) .deps-module-*
+	@rm -rf base module-* rules-base ngx-fancyindex rules-module-* debuild-base debuild-module-* nginx-tests $(BASE_SRC) .deps-module-*
 	@rm -f nginx.deb-changelog nginx-*.deb-changelog nginx-module-*.deb-changelog nginx-module-*.skip
 
 .PHONY:	default list list-base list-all-modules list-base-modules all modules rules test test-debug check-modules clean
