@@ -77,7 +77,7 @@ BASE_CONFIGURE_ARGS=\
 	--with-http_auth_request_module \
 	--with-http_dav_module \
 	--with-http_flv_module \
-	--add-module=$(shell git clone https://github.com/wy414012/ngx-fancyindex.git && pwd)/ngx-fancyindex \ 
+	--add-module=$(shell git clone https://github.com/wy414012/ngx-fancyindex.git && pwd)/ngx-fancyindex \
 	--with-http_gunzip_module \
 	--with-http_gzip_static_module \
 	--with-http_mp4_module \
