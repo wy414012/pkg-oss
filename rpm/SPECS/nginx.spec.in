@@ -76,8 +76,8 @@ Requires(pre): shadow-utils
 
 %define bdir %{_builddir}/%{name}-%{base_version}
 
-%define WITH_CC_OPT $(echo %{optflags} $(pcre2-config --cflags)) -fPIC
-%define WITH_LD_OPT -Wl,-z,relro -Wl,-z,now -pie
+%define WITH_CC_OPT -I /root/boringssl/include -x c
+%define WITH_LD_OPT -L /root/boringssl/build/ssl -L /root/boringssl/build/crypto
 
 %define BASE_CONFIGURE_ARGS $(echo "%%BASE_CONFIGURE_ARGS%%")
 
@@ -128,6 +128,7 @@ a mail proxy server.
 
 %build
 ./configure %{BASE_CONFIGURE_ARGS} \
+    --with-cc=c++ \
     --with-cc-opt="%{WITH_CC_OPT}" \
     --with-ld-opt="%{WITH_LD_OPT}" \
     --with-debug
@@ -135,6 +136,7 @@ make %{?_smp_mflags}
 %{__mv} %{bdir}/objs/nginx \
     %{bdir}/objs/nginx-debug
 ./configure %{BASE_CONFIGURE_ARGS} \
+    --with-cc=c++ \
     --with-cc-opt="%{WITH_CC_OPT}" \
     --with-ld-opt="%{WITH_LD_OPT}"
 make %{?_smp_mflags}
