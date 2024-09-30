@@ -83,8 +83,8 @@ nginx %%SHORT_SUMMARY%%.
 %debug_package
 %endif
 
-%define WITH_CC_OPT -I /root/boringssl/include -x c $(echo %{optflags} $(pcre2-config --cflags))
-%define WITH_LD_OPT -L /root/boringssl/build/ssl -L /root/boringssl/build/crypto -Wl,-z,relro -Wl,-z,now -Wl,-as-needed
+%define WITH_CC_OPT $(echo %{optflags} $(pcre2-config --cflags))
+%define WITH_LD_OPT -Wl,-z,relro -Wl,-z,now -Wl,-as-needed
 
 %define BASE_CONFIGURE_ARGS $(echo "%%BASE_CONFIGURE_ARGS%%")
 %define MODULE_CONFIGURE_ARGS $(echo "%%MODULE_CONFIGURE_ARGS%%")
@@ -103,7 +103,6 @@ ln -s . nginx%{?base_suffix}
 cd %{bdir}
 %%MODULE_ENV%%
 ./configure %{BASE_CONFIGURE_ARGS} %{MODULE_CONFIGURE_ARGS} \
-	--with-cc=c++ \
 	--with-cc-opt="%{WITH_CC_OPT} %%MODULE_CC_OPT_DEBUG%%" \
 	--with-ld-opt="%{WITH_LD_OPT} %%MODULE_LD_OPT_DEBUG%%" \
 	--with-debug
@@ -114,7 +113,6 @@ mv $so $debugso
 done
 %%MODULE_ENV%%
 ./configure %{BASE_CONFIGURE_ARGS} %{MODULE_CONFIGURE_ARGS} \
-	--with-cc=c++ \
 	--with-cc-opt="%{WITH_CC_OPT} %%MODULE_CC_OPT%%" \
 	--with-ld-opt="%{WITH_LD_OPT} %%MODULE_LD_OPT%%"
 make %{?_smp_mflags} modules
