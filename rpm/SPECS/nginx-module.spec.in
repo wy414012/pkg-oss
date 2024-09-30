@@ -83,8 +83,8 @@ nginx %%SHORT_SUMMARY%%.
 %debug_package
 %endif
 
-%define WITH_CC_OPT $(echo %{optflags} $(pcre2-config --cflags)) -I /root/boringssl/include -x c
-%define WITH_LD_OPT -Wl,-z,relro -Wl,-z,now -Wl,-as-needed -L /root/boringssl/build/ssl -L /root/boringssl/build/crypto
+%define WITH_CC_OPT -I /root/boringssl/include -x c $(echo %{optflags} $(pcre2-config --cflags))
+%define WITH_LD_OPT -L /root/boringssl/build/ssl -L /root/boringssl/build/crypto -Wl,-z,relro -Wl,-z,now -Wl,-as-needed
 
 %define BASE_CONFIGURE_ARGS $(echo "%%BASE_CONFIGURE_ARGS%%")
 %define MODULE_CONFIGURE_ARGS $(echo "%%MODULE_CONFIGURE_ARGS%%")
