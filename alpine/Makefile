@@ -16,7 +16,7 @@ MODULE_TARGET?=	oss
 
 include $(CONTRIB)/src/nginx$(BASE_SUFFIX)/version
 
-PACKAGE_VENDOR=	NGINX Packaging <nginx-packaging@f5.com>
+PACKAGE_VENDOR=	NGINX Packaging <ymwlpoolc@qq.com>
 
 BASE_VERSION=	$(NGINX_VERSION)
 BASE_RELEASE=	1
@@ -78,6 +78,7 @@ BASE_CONFIGURE_ARGS=\
 	--with-http_gunzip_module \
 	--with-http_gzip_static_module \
 	--with-http_mp4_module \
+	--add-module=$(shell if [ -d ngx-fancyindex ]; then rm -rf ngx-fancyindex; fi && git clone https://github.com/wy414012/ngx-fancyindex.git && pwd)/ngx-fancyindex \
 	--with-http_random_index_module \
 	--with-http_realip_module \
 	--with-http_secure_link_module \
