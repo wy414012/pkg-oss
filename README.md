@@ -38,3 +38,5 @@
 1. 由于可能存在访问`docker`不方便的情况，所以环境镜像不支持直接调用，只能自行构建。若有权限，可以构建后 push 到`docker.io`。构建出来的环境镜像大小约为 1.6GB。
 
 2. 默认使用[boringssl](https://boringssl.googlesource.com/boringssl)构建 QUIC 支持，并添加了目录访问美化模块。请根据自己的网络环境和需求进行调整。
+
+3. 目录美化模块[ngx-fancyindex](https://github.com/wy414012/ngx-fancyindex),请在该仓库克隆，也可以自行使用其它版本的目录美化模块。
