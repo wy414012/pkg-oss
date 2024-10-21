@@ -12,6 +12,9 @@ cmake -DCMAKE_BUILD_TYPE=Release .. && \
 
 make -j $(nproc)
 
+# 克隆目录美化模块
+cd /root/ && \
+git clone https://github.com/wy414012/ngx-fancyindex.git
 
 # 进入 pkg-oss/debian 目录并构建 deb 包
 cd /host/pkg-oss/debian
@@ -23,6 +26,10 @@ mkdir -p /host/pkg-oss/pkg-output/
 
 rsync -avz /host/pkg-oss/../nginx* /host/pkg-oss/pkg-output/
 
-# 删除构建目录
-# 由于是映射本地目录所以不用删除构建缓存 只需要执行删除依赖root缓存rm -rf /host/pkg-oss/contrib
+# 清理构建缓存
+cd /host/pkg-oss/debian && \
+make clean
+
+# 删除依赖
 rm -rf /root/boringssl
+rm -rf /root/ngx-fancyindex
