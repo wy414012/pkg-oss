@@ -40,3 +40,5 @@
 2. 默认使用[boringssl](https://boringssl.googlesource.com/boringssl)构建 QUIC 支持，并添加了目录访问美化模块。请根据自己的网络环境和需求进行调整。
 
 3. 目录美化模块[ngx-fancyindex](https://github.com/wy414012/ngx-fancyindex),请在该仓库克隆，也可以自行使用其它版本的目录美化模块。
+
+4. 构建出的deb包在当前目录下的`pkg-output`中
