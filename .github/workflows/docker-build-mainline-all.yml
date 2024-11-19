@@ -90,7 +90,7 @@ jobs:
             os_type: "opencloudos9"
           - os: "ghcr.io/wy414012/pkg-oss:latest-tencentos4-amd64"
             os_version: "TenCentos 4"
-            os_type: "tecentos4"
+            os_type: "tencentos4"
     container:
       image: ${{ matrix.os }}
     continue-on-error: true  # 确保即使某个任务失败，其他任务仍然会继续执行
@@ -186,6 +186,7 @@ jobs:
           - os_type: "bookworm"
             target_folder: "debian/bookworm/mainline/"
             package_type: "deb"
+    continue-on-error: true  # 确保即使某个任务失败，其他任务仍然会继续执行
     steps:
       - name: Download ${{matrix.package_type}}-${{matrix.os_type}}
         uses: actions/download-artifact@v4
