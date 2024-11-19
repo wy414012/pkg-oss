@@ -1,0 +1,20 @@
+# 使用 debian 作为默认基础镜像
+ARG BASE_IMAGE=debian:12
+
+FROM ${BASE_IMAGE}
+
+# 安装构建环境所需的软件包
+RUN apt-get update && \
+    apt-get install -y libssl-dev cmake lsb-release rsync libxml2-utils xsltproc devscripts quilt git libpcre2-dev libmaxminddb-dev libgd-dev libedit-dev libxml2-dev libxslt-dev libre2-dev libc-ares-dev libperl-dev libkrb5-dev libgeoip-dev libyaml-cpp-dev libboost-dev libunwind-dev golang && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/ && \
+    mkdir -p /host/pkg-oss
+
+# 配置工作目录
+WORKDIR /host/pkg-oss/debian
+
+#COPY 暂时不使用，因为只使用构建基础镜像
+
+ 
+# 设置容器为启动时自动执行构建脚本
+CMD ["/bin/bash", "-c", "chmod +x /host/pkg-oss/build_all.sh && /host/pkg-oss/build_all.sh"]

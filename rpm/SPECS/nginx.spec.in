@@ -9,11 +9,11 @@ Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
 
-%if 0%{?rhel}
+%if 0%{?rhel} || 0%{?oc} || 0%{?tencentos}
 %define _group System Environment/Daemons
 %endif
 
-%if (0%{?rhel} == 7) && (0%{?amzn} == 0)
+%if (0%{?rhel} == 7) && (0%{?amzn} == 0) || (0%{?oc} == 7) && (0%{?tencentos} == 2)
 %define epoch 1
 Epoch: %{epoch}
 Requires(pre): shadow-utils
@@ -23,7 +23,7 @@ BuildRequires: openssl-devel >= 1.0.2
 %define dist .el7
 %endif
 
-%if (0%{?rhel} == 7) && (0%{?amzn} == 2)
+%if (0%{?rhel} == 7) && (0%{?amzn} == 2) || (0%{?oc} == 7) && (0%{?tencentos} == 2)
 %define epoch 1
 Epoch: %{epoch}
 Requires(pre): shadow-utils
@@ -32,7 +32,7 @@ Requires: procps-ng
 BuildRequires: openssl11-devel >= 1.1.1
 %endif
 
-%if 0%{?rhel} == 8
+%if 0%{?rhel} == 8 || 0%{?oc} == 8 || 0%{?tencentos} == 3
 %define epoch 1
 Epoch: %{epoch}
 Requires(pre): shadow-utils
@@ -41,7 +41,7 @@ BuildRequires: openssl-devel >= 1.1.1
 %define _debugsource_template %{nil}
 %endif
 
-%if 0%{?rhel} == 9
+%if 0%{?rhel} == 9 || 0%{?oc} == 9 || 0%{?tencentos} == 4
 %define epoch 1
 Epoch: %{epoch}
 Requires(pre): shadow-utils
@@ -76,8 +76,9 @@ Requires(pre): shadow-utils
 
 %define bdir %{_builddir}/%{name}-%{base_version}
 
-%define WITH_CC_OPT $(echo %{optflags} $(pcre2-config --cflags)) -fPIC
-%define WITH_LD_OPT -Wl,-z,relro -Wl,-z,now -pie
+%define spec_dir %{_sourcedir}
+%define WITH_CC_OPT -I %{spec_dir}/../boringssl/include -x c
+%define WITH_LD_OPT -L %{spec_dir}/../boringssl/build/ssl -L %{spec_dir}/../boringssl/build/crypto
 
 %define BASE_CONFIGURE_ARGS $(echo "%%BASE_CONFIGURE_ARGS%%")
 
@@ -111,7 +112,7 @@ BuildRequires: pcre2-devel
 Provides: webserver
 Provides: nginx-r%{base_version}
 
-%if !(0%{?rhel} == 7)
+%if !(0%{?rhel} == 7) || !(0%{?oc} == 7) || !(0%{?tencentos} == 2)
 Recommends: logrotate
 %endif
 
@@ -128,6 +129,7 @@ a mail proxy server.
 
 %build
 ./configure %{BASE_CONFIGURE_ARGS} \
+    --with-cc=c++ \
     --with-cc-opt="%{WITH_CC_OPT}" \
     --with-ld-opt="%{WITH_LD_OPT}" \
     --with-debug
@@ -135,6 +137,7 @@ make %{?_smp_mflags}
 %{__mv} %{bdir}/objs/nginx \
     %{bdir}/objs/nginx-debug
 ./configure %{BASE_CONFIGURE_ARGS} \
+    --with-cc=c++ \
     --with-cc-opt="%{WITH_CC_OPT}" \
     --with-ld-opt="%{WITH_LD_OPT}"
 make %{?_smp_mflags}
