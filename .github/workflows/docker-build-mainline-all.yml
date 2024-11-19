@@ -1,0 +1,211 @@
+name: "docker build mainline"
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  deb:
+    name: "Nginx-BoringSSL (${{ matrix.os_version }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: "ghcr.io/wy414012/pkg-oss:latest-debian11-amd64"
+            os_version: "Debian-11"
+            os_type: "bullseye"
+          - os: "ghcr.io/wy414012/pkg-oss:latest-debian12-amd64"
+            os_version: "Debian-12"
+            os_type: "bookworm"
+    container:
+      image: ${{ matrix.os }}
+    continue-on-error: true  # 确保即使某个任务失败，其他任务仍然会继续执行
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: google/boringssl
+          path: debian/boringssl
+
+      - uses: actions/checkout@v4
+        with:
+          repository: wy414012/ngx-fancyindex
+          path: debian/ngx-fancyindex
+
+      - name: Update apt
+        run: apt-get update
+
+      - name: Install build -tool
+        run: |
+          apt-get install -y libssl-dev cmake lsb-release rsync libxml2-utils xsltproc devscripts quilt git libpcre2-dev libmaxminddb-dev libgd-dev libedit-dev libxml2-dev libxslt-dev libre2-dev libc-ares-dev libperl-dev libkrb5-dev libgeoip-dev libyaml-cpp-dev libboost-dev libunwind-dev golang
+
+      - name: build boringssl
+        working-directory: debian/boringssl
+        run: |
+          mkdir build && \
+          cd build && \
+          cmake -DCMAKE_BUILD_TYPE=Release .. && \
+          make -j $(nproc)
+
+      - name: build all
+        working-directory: debian
+        run: make base module-auth-spnego module-lua module-njs module-image-filter module-geoip2 module-geoip module-subs-filter module-rtmp module-set-misc module-perl module-fips-check module-brotli module-xslt module-ndk module-headers-more module-otel module-encrypted-session module-opentracing
+
+      - name: Move Files
+        working-directory: debian
+        run: |
+          mkdir -p deb
+          mv ../../nginx* ./deb/
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+           name: deb-${{ matrix.os_type }}
+           path: ./debian/deb/nginx*
+           compression-level: 0
+
+      - name: build clean
+        working-directory: debian
+        run: make clean
+
+  rpm:
+    name: "Nginx-BoringSSL (${{ matrix.os_version }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: "ghcr.io/wy414012/pkg-oss:latest-rockylinux9-amd64"
+            os_version: "Rocky Linux 9"
+            os_type: "rockylinux9"
+          - os: "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64"
+            os_version: "Rocky Linux 8"
+            os_type: "rockylinux8"
+          - os: "ghcr.io/wy414012/pkg-oss:latest-opencloudos9-amd64"
+            os_version: "OpenCloudOS 9"
+            os_type: "opencloudos9"
+          - os: "ghcr.io/wy414012/pkg-oss:latest-tencentos4-amd64"
+            os_version: "TenCentos 4"
+            os_type: "tecentos4"
+    container:
+      image: ${{ matrix.os }}
+    continue-on-error: true  # 确保即使某个任务失败，其他任务仍然会继续执行
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: google/boringssl
+          path: rpm/boringssl
+
+      - uses: actions/checkout@v4
+        with:
+          repository: wy414012/ngx-fancyindex
+          path: rpm/ngx-fancyindex
+
+      - name: Setup ${{ matrix.os_version }} Linux
+        run: |
+          dnf makecache
+          (dnf install -y epel-release 'dnf-command(config-manager)' || dnf install -y epol-release 'dnf-command(config-manager)') || true
+          if [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
+            dnf config-manager --set-enabled powertools
+            dnf -y install gcc-toolset-10-gcc-c++
+          elif [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-rockylinux9-amd64" ]]; then
+            dnf config-manager --set-enabled crb
+          fi
+          dnf update -y
+
+      - name: Install Development Tools
+        run: |
+          dnf -y groupinstall 'Development Tools'
+          dnf -y install git golang cmake libunwind-devel pcre2-devel krb5-devel libedit libxml2-devel libxslt-devel gd-devel libmaxminddb perl-ExtUtils-Embed perl-devel c-ares-devel re2-devel boost-devel libstdc++-devel yaml-cpp-devel rake brotli-devel which libatomic libedit-devel libmaxminddb-devel libstdc++-static xz
+
+      - name: build boringssl
+        working-directory: rpm/boringssl
+        run: |
+          if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
+          source /opt/rh/gcc-toolset-10/enable
+          fi
+          mkdir build && \
+          cd build && \
+          cmake -DCMAKE_BUILD_TYPE=Release .. && \
+          make -j $(nproc)
+
+#      - name: Replace RHEL with OC for OpenCloudOS Linux 9
+#        if: ${{ matrix.os == 'ghcr.io/wy414012/pkg-oss:latest-opencloudos9-amd64' }}
+#        working-directory: rpm/SPECS
+#        run: grep -rl "0%{?rhel}" . | xargs sed -i 's/0%{?rhel}/0%{?oc}/g'
+
+      - name: build all
+        working-directory: rpm/SPECS
+        run: make base module-auth-spnego module-lua module-njs module-image-filter module-geoip2 module-geoip module-subs-filter module-rtmp module-set-misc module-perl module-fips-check module-brotli module-xslt module-ndk module-headers-more module-otel module-encrypted-session module-opentracing
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+           name: rpm-${{ matrix.os_type }}
+           path: |
+              ./rpm/RPMS
+              ./rpm/SRPMS
+           compression-level: 0
+
+      - name: build clean
+        working-directory: rpm/SPECS
+        run: make clean
+  deploy:
+    name: "Rsync Nginx Packages"
+    needs:
+      - deb
+      - rpm
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os_type: "rockylinux9"
+            target_folder: "centos/mainline/9/"
+            package_type: "rpm"
+          - os_type: "rockylinux8"
+            target_folder: "centos/mainline/8/"
+            package_type: "rpm"
+          - os_type: "opencloudos9"
+            target_folder: "opencloudos/mainline/9/"
+            package_type: "rpm"
+          - os_type: "tencentos4"
+            target_folder: "tencentos/mainline/4/"
+            package_type: "rpm"
+          - os_type: "bullseye"
+            target_folder: "debian/bullseye/mainline/"
+            package_type: "deb"
+          - os_type: "bookworm"
+            target_folder: "debian/bookworm/mainline/"
+            package_type: "deb"
+    steps:
+      - name: Download ${{matrix.package_type}}-${{matrix.os_type}}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{matrix.package_type}}-${{matrix.os_type}}
+          path: .
+
+      - name: rsync web server-${{matrix.os_type}}
+        env:
+          SECRET_CHECK_SCRIPT_URL: ${{ secrets.SECRET_CHECK_SCRIPT_URL }}
+          SSH_PRIVATE_KEY: ${{ secrets.GIT_PRIVATE_KEY }}
+          TARGET_FOLDER: ${{ matrix.target_folder }}
+          PACKAGE_TYPE: ${{ matrix.package_type }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+          if [ "$PACKAGE_TYPE" == "rpm" ]; then
+            rsync -avz --progress ./{RPMS/x86_64,SRPMS} $SECRET_CHECK_SCRIPT_URL$TARGET_FOLDER
+          else
+            rsync -avz --progress ./nginx* $SECRET_CHECK_SCRIPT_URL$TARGET_FOLDER
+          fi

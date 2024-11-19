@@ -49,6 +49,8 @@ BASE_MODULES=	geoip image-filter njs otel perl xslt
 
 MODULES=
 
+MODUPATCH= $(PWD)/../ngx-fancyindex
+
 -include Makefile.module-*
 
 BASE_CONFIGURE_ARGS=\
@@ -77,6 +79,7 @@ BASE_CONFIGURE_ARGS=\
 	--with-http_gunzip_module \
 	--with-http_gzip_static_module \
 	--with-http_mp4_module \
+	--add-module=$(MODUPATCH) \
 	--with-http_random_index_module \
 	--with-http_realip_module \
 	--with-http_secure_link_module \
@@ -85,7 +88,7 @@ BASE_CONFIGURE_ARGS=\
 	--with-http_stub_status_module \
 	--with-http_sub_module \
 	--with-http_v2_module \
-$$( if [ 0%{?rhel} -eq 7 ] || [ 0%{?suse_version} -eq 1315 ]; then \
+$$( if [ 0%{?rhel} -eq 7 ] || [ 0%{?suse_version} -eq 1315 ] || [ 0%{?oc} -eq 7 ] || [ 0%{?tencentos} -eq 2 ]; then \
 	continue; \
 else \
 	echo "--with-http_v3_module"; \
@@ -317,7 +320,7 @@ check-compat-%:
 		fi ; \
 		;; \
 		geoip) \
-		if [ `rpm --eval '0%{?rhel}'` -ge 8 ] || [ `rpm --eval '0%{?amzn}'` -gt 2 ]; then \
+		if [ `rpm --eval '0%{?rhel}'` -ge 8 ] || [ `rpm --eval '0%{?amzn}'` -gt 2 ] || [ `rpm --eval '0%{?oc}'` -ge 8 ] || [ `rpm --eval '0%{?tencentos}'` -gt 2 ]; then \
 			echo "GeoIP can not be build on RHEL/CentOS >= 8 or Amazon Linux >2" > \
 			nginx-module-$${module}.skip ; \
 			exit ; \
@@ -355,7 +358,7 @@ check-compat-%:
 			nginx-module-$${module}.skip ; \
 			exit ; \
 		fi ; \
-		if [ "`rpm --eval '0%{?rhel}'`" -eq 7 ]; then \
+		if [ "`rpm --eval '0%{?rhel}'`" -eq 7 ] || [ "`rpm --eval '0%{?oc}'`" -eq 7 ]|| [ "`rpm --eval '0%{?tencentos}'`" -eq 2 ]; then \
 			echo "otel can not be built on RHEL 7 due to too old compiler" > \
 			nginx-module-$${module}.skip ; \
 			exit ; \

@@ -1,0 +1,62 @@
+name: Build Debian and Centos amd64 Images
+
+on:
+  workflow_dispatch:
+
+env:
+  LATEST_TAG: latest
+  GHCR_IMAGE_NAMESPACE: ${{ github.event.inputs.GHCR_IMAGE_NAMESPACE || github.actor }}
+
+jobs:
+  docker-image-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build-config:
+          - { name: "Debian 11", file: "Dockerfile.debian", base_image: "debian:11", tag_suffix: "debian11" }
+          - { name: "Debian 12", file: "Dockerfile.debian", base_image: "debian:12", tag_suffix: "debian12" }
+          - { name: "Rocky Linux 8", file: "Dockerfile.rehat", base_image: "rockylinux/rockylinux:8", tag_suffix: "rockylinux8" }
+          - { name: "Rocky Linux 9", file: "Dockerfile.rehat", base_image: "rockylinux/rockylinux:9", tag_suffix: "rockylinux9" }
+          - { name: "OpenCloud OS 9.0", file: "Dockerfile.rehat", base_image: "opencloudos/opencloudos9-minimal:latest", tag_suffix: "opencloudos9" }
+          - { name: "TenCentos OS 4", file: "Dockerfile.rehat", base_image: "tencentos/tencentos4-minimal:latest", tag_suffix: "tencentos4" }
+          - { name: "CentOS 7", file: "Dockerfile.rehat.7", base_image: "centos:centos7", tag_suffix: "centos7" }
+    continue-on-error: true  # 确保即使某个任务失败，其他任务仍然会继续执行
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version from tag
+        id: vars
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          else
+            echo "TAG=latest" >> $GITHUB_ENV  # Default to 'latest' if not a tag
+          fi
+
+      - name: Build ${{ matrix.build-config.name }} and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: "."
+          file: ./${{ matrix.build-config.file }}
+          platforms: linux/amd64
+          push: true
+          provenance: false
+          build-args: |
+            BASE_IMAGE=${{ matrix.build-config.base_image }}
+          tags: |
+            ghcr.io/${{ env.GHCR_IMAGE_NAMESPACE }}/pkg-oss:${{ env.LATEST_TAG }}-${{ matrix.build-config.tag_suffix }}-amd64,
+            ghcr.io/${{ env.GHCR_IMAGE_NAMESPACE }}/pkg-oss:${{ env.TAG }}-${{ matrix.build-config.tag_suffix }}-amd64

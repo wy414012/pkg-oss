@@ -52,6 +52,8 @@ BASE_MODULES=	geoip image-filter njs otel perl xslt
 
 MODULES=
 
+MODUPATCH= $(PWD)/ngx-fancyindex
+
 -include Makefile.module-*
 
 BASE_CONFIGURE_ARGS=\
@@ -77,6 +79,7 @@ BASE_CONFIGURE_ARGS=\
 	--with-http_auth_request_module \
 	--with-http_dav_module \
 	--with-http_flv_module \
+	--add-module=$(MODUPATCH) \
 	--with-http_gunzip_module \
 	--with-http_gzip_static_module \
 	--with-http_mp4_module \

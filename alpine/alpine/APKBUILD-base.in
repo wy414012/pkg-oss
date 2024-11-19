@@ -56,18 +56,18 @@ prepare() {
 }
 
 build() {
-	cd "$builddir"
+        cd "$builddir"
 
-	_nproc=`getconf _NPROCESSORS_ONLN`
-	if [ $_nproc -gt 1 ]; then
-		_make_opts="-j$_nproc"
-	fi
+        _nproc=`getconf _NPROCESSORS_ONLN`
+        if [ $_nproc -gt 1 ]; then
+                _make_opts="-j$_nproc"
+        fi
 
-	CFLAGS= ./configure %%BASE_CONFIGURE_ARGS%% --with-cc-opt="$CFLAGS" --with-ld-opt="$LDFLAGS" --with-debug
-	make $_make_opts
-	mv objs/nginx objs/nginx-debug
-	CFLAGS= ./configure %%BASE_CONFIGURE_ARGS%% --with-cc-opt="$CFLAGS" --with-ld-opt="$LDFLAGS"
-	make $_make_opts
+        CFLAGS= ./configure %%BASE_CONFIGURE_ARGS%% --with-cc=c++ --with-cc-opt="-I ${PWD}/../../boringssl/include -x c" --with-ld-opt="-L ${PWD}/../../boringssl/build/ssl -L ${PWD}/../../boringssl/build/crypto" --with-debug
+        make $_make_opts
+        mv objs/nginx objs/nginx-debug
+        CFLAGS= ./configure %%BASE_CONFIGURE_ARGS%% --with-cc=c++ --with-cc-opt="-I ${PWD}/../../boringssl/include -x c" --with-ld-opt="-L ${PWD}/../../boringssl/build/ssl -L ${PWD}/../../boringssl/build/crypto"
+        make $_make_opts
 }
 
 package() {

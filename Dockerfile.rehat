@@ -1,0 +1,54 @@
+ARG BASE_IMAGE=opencloudos/opencloudos:9.0
+# 使用外部传参
+FROM ${BASE_IMAGE}
+
+LABEL maintainer="ymwl <ymwlpoolc@qq.com>"
+LABEL description="pkg-oss nginx-boringssl build ."
+ENV LANG=en_US.UTF-8
+
+RUN dnf makecache && \
+    (dnf install -y epel-release || dnf install -y epol-release 'dnf-command(config-manager)') && \
+    (dnf config-manager --set-enabled powertools || dnf config-manager --set-enabled crb) || true && \
+    dnf repolist && \
+    dnf update -y && \
+    dnf -y groupinstall 'Development Tools' && \
+    (dnf -y install gcc-toolset-10-gcc-c++) || true && \
+    dnf -y install \
+        git \
+        tar \
+        golang \
+        cmake \
+        libunwind-devel \
+        pcre2-devel \
+        krb5-devel \
+        libedit \
+        libxml2-devel \
+        libxslt-devel \
+        gd-devel \
+        libmaxminddb \
+        perl-ExtUtils-Embed \
+        perl-devel \
+        c-ares-devel \
+        openssl-devel \
+        re2-devel \
+        boost-devel \
+        libstdc++-devel \
+        yaml-cpp-devel \
+        rake \
+        brotli-devel \
+        which \
+        libatomic \
+        libedit-devel \
+        libmaxminddb-devel \
+        libstdc++-static \
+        xz && \
+    dnf clean all && \
+    rm -rf /var/cache/* \
+    
+
+# 不使用COPY指令构建基础环境
+
+# 不指定工作目录指定用于CI调用
+
+# 设置容器启动环境
+CMD ["/bin/bash"]

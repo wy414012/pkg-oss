@@ -1,0 +1,79 @@
+# 使用 centos7 作为默认基础镜像
+ARG BASE_IMAGE=centos:centos7
+
+FROM ${BASE_IMAGE}
+
+LABEL maintainer="ymwl <ymwlpoolc@qq.com>"
+LABEL description="pkg-oss nginx-boringssl build ."
+ENV LANG=en_US.UTF-8
+
+# 安装构建环境所需的软件包
+RUN sed -i.bak \
+    -e 's|^mirrorlist=|#mirrorlist=|g' \
+    -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://mirror.moack.co.kr/centos-vault|g' \
+    /etc/yum.repos.d/*.repo && \
+    yum install -y centos-release-scl && \
+    sed -e "s|^mirrorlist=|#mirrorlist=|g" \
+        -e "s|^#baseurl=http://mirror.centos.org/centos/7/sclo|baseurl=https://mirror.moack.co.kr/centos-vault/7.9.2009/sclo|g" \
+        -e "s|^# baseurl=http://mirror.centos.org/centos/7/sclo|baseurl=https://mirror.moack.co.kr/centos-vault/7.9.2009/sclo|g" \
+        -i.bak \
+        /etc/yum.repos.d/CentOS-*.repo && \
+    yum install -y epel-release && \
+    sed -e "s|^metalink=|#metalink=|g" \
+        -e "s|^#baseurl=http://download.fedoraproject.org/pub|baseurl=https://archives.fedoraproject.org/pub/archive|g" \
+        -i.bak \
+        /etc/yum.repos.d/*.repo && \
+    yum update -y && \
+    yum -y install devtoolset-11-gcc-c++ && \
+    yum -y groupinstall 'Development Tools' && \
+    yum -y install \
+        wget \
+        git \
+        golang \
+        pcre2-devel \
+        krb5-devel \
+        libedit-devel \
+        libxml2-devel \
+        libxslt-devel \
+        gd-devel \
+        libmaxminddb-devel \
+        perl-ExtUtils-Embed \
+        perl-devel \
+        c-ares-devel \
+        re2-devel \
+        boost-devel \
+        libstdc++-static \
+        yaml-cpp-devel \
+        ncurses-devel \
+        libicu \
+        lua \
+        zlib-devel \
+        pcre-devel \
+        perl-IPC-Cmd \
+        GeoIP-devel \
+        brotli-devel \
+        which \
+        openssl11-devel \
+        openssl-devel \
+        rake \
+        xz \
+        libarchive \
+        libuv \
+        vim-filesystem && \
+    cd /tmp && \
+    wget -c https://github.com/wy414012/pkg-oss/releases/download/1.27.2-1/{libunwind-1.3.1-3.el7.x86_64.rpm,libunwind-devel-1.3.1-3.el7.x86_64.rpm} && \
+    rpm -ivh {libunwind-1.3.1-3.el7.x86_64.rpm,libunwind-devel-1.3.1-3.el7.x86_64.rpm} && \
+    wget -c https://github.com/wy414012/pkg-oss/releases/download/1.27.2-1/{cmake-3.20.2-4.el7.x86_64.rpm,cmake-filesystem-3.20.2-4.el7.x86_64.rpm,cmake-data-3.20.2-4.el7.noarch.rpm,cmake-rpm-macros-3.20.2-4.el7.noarch.rpm} && \
+    rpm -ivh {cmake-3.20.2-4.el7.x86_64.rpm,cmake-filesystem-3.20.2-4.el7.x86_64.rpm,cmake-data-3.20.2-4.el7.noarch.rpm,cmake-rpm-macros-3.20.2-4.el7.noarch.rpm} && \
+    yum clean all && \
+    rm -rf /tmp/* && \
+    rm -rf /var/cache/yum && \
+    rm -rf /var/lib/rpm/__db.*
+    
+# 由于是用于CI调用所以不配置工作目录
+# WORKDIR /host/pkg-oss/rpm
+
+# COPY 暂时不使用，因为只使用构建基础镜像
+
+# 设置容器启动环境
+CMD ["/bin/bash"]
