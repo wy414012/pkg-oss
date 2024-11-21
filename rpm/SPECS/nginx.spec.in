@@ -41,8 +41,9 @@ BuildRequires: openssl-devel >= 1.1.1
 %define _debugsource_template %{nil}
 %endif
 
+
 %if 0%{?rhel} == 9 || 0%{?oc} == 9 || 0%{?tencentos} == 4
-%define epoch 1
+%define epoch 2
 Epoch: %{epoch}
 Requires(pre): shadow-utils
 Requires: procps-ng
