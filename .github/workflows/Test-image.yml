@@ -30,7 +30,8 @@ jobs:
         with:
           repository: google/boringssl
           path: debian/boringssl
-          ref: ${{ matrix.os_version == 'Debian-11' && '781a72b2aa513bbbf01b9bc670b0495a6b115968' || 'master' }}
+          ref: master
+#          ref: ${{ matrix.os_version == 'Debian-11' && '781a72b2aa513bbbf01b9bc670b0495a6b115968' || 'master' }} 由于官方已经修复无法构建的bug现在回复为master
           
       - uses: actions/checkout@v4
         with:
@@ -40,16 +41,40 @@ jobs:
       - name: Update apt
         run: apt-get update
 
-      - name: Install build -tool
+      - name: Install build-tool
         run: |
-         apt-get install -y libssl-dev cmake lsb-release rsync libxml2-utils xsltproc devscripts quilt git libpcre2-dev libmaxminddb-dev libgd-dev libedit-dev libxml2-dev libxslt-dev libre2-dev libc-ares-dev libperl-dev libkrb5-dev libgeoip-dev libyaml-cpp-dev libboost-dev libunwind-dev golang
+         apt-get install -y \
+         libssl-dev \
+         cmake \
+         lsb-release \
+         libxml2-utils \
+         xsltproc \
+         devscripts \
+         quilt \
+         git \
+         libpcre2-dev \
+         libmaxminddb-dev \
+         libgd-dev \
+         libedit-dev \
+         libxml2-dev \
+         libxslt-dev \
+         libre2-dev \
+         libc-ares-dev \
+         libperl-dev \
+         libkrb5-dev \
+         libgeoip-dev \
+         libyaml-cpp-dev \
+         libboost-dev \
+         libunwind-dev \
+         golang \
+         lua-dev
 
       - name: build boringssl
         working-directory: debian/boringssl
         run: |
           mkdir build && \
           cd build && \
-          cmake -DCMAKE_BUILD_TYPE=Release .. && \
+          cmake -DOPENSSL_SMALL=1 -DCMAKE_BUILD_TYPE=Release .. && \
           make -j $(nproc)
 
       - name: build base
@@ -111,7 +136,7 @@ jobs:
           (dnf install -y epel-release 'dnf-command(config-manager)' || dnf install -y epol-release 'dnf-command(config-manager)') || true
           if [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
             dnf config-manager --set-enabled powertools
-            dnf -y install gcc-toolset-10-gcc-c++
+            dnf -y install gcc-toolset-11-gcc-c++
           elif [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-rockylinux9-amd64" ]]; then
             dnf config-manager --set-enabled crb
           fi
@@ -119,24 +144,52 @@ jobs:
 
       - name: Install Development Tools
         run: |
-          dnf -y groupinstall 'Development Tools'
-          dnf -y install git golang cmake libunwind-devel pcre2-devel krb5-devel libedit libxml2-devel libxslt-devel gd-devel libmaxminddb perl-ExtUtils-Embed perl-devel c-ares-devel re2-devel boost-devel libstdc++-devel yaml-cpp-devel rake brotli-devel which libatomic libedit-devel libmaxminddb-devel libstdc++-static xz
+          dnf -y install \
+              git \
+              gcc \
+              gcc-c++ \
+              make \
+              rpm-build \
+              tar \
+              golang \
+              cmake \
+              libunwind-devel \
+              pcre2-devel \
+              krb5-devel \
+              libedit \
+              libxml2-devel \
+              libxslt-devel \
+              gd-devel \
+              libmaxminddb \
+              perl-ExtUtils-Embed \
+              perl-devel \
+              c-ares-devel \
+              openssl-devel \
+              re2-devel \
+              boost-devel \
+              libstdc++-devel \
+              yaml-cpp-devel \
+              rake \
+              brotli-devel \
+              which \
+              libatomic \
+              libedit-devel \
+              libmaxminddb-devel \
+              libstdc++-static \
+              lua-devel \
+              perl-macros \
+              xz
 
       - name: build boringssl
         working-directory: rpm/boringssl
         run: |
           if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
-          source /opt/rh/gcc-toolset-10/enable
+          source /opt/rh/gcc-toolset-11/enable
           fi
           mkdir build && \
           cd build && \
-          cmake -DCMAKE_BUILD_TYPE=Release .. && \
+          cmake -DOPENSSL_SMALL=1 -DCMAKE_BUILD_TYPE=Release .. && \
           make -j $(nproc)
-
-#      - name: Replace RHEL with OC for OpenCloudOS Linux 9
-#        if: ${{ matrix.os == 'ghcr.io/wy414012/pkg-oss:latest-opencloudos9-amd64' }}
-#        working-directory: rpm/SPECS
-#        run: grep -rl "0%{?rhel}" . | xargs sed -i 's/0%{?rhel}/0%{?oc}/g'
 
       - name: build base
         working-directory: rpm/SPECS
