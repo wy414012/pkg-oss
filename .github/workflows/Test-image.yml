@@ -67,7 +67,8 @@ jobs:
          libboost-dev \
          libunwind-dev \
          golang \
-         lua-dev
+         rake
+
 
       - name: build boringssl
         working-directory: debian/boringssl
