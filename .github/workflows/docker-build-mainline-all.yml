@@ -66,6 +66,7 @@ jobs:
             libyaml-cpp-dev \
             libboost-dev \
             libunwind-dev \
+            systemd \
             golang \
             rake
 

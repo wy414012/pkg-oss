@@ -40,6 +40,7 @@ RUN dnf makecache && \
     rake \
     brotli-devel \
     which \
+    systemd \
     libatomic \
     libedit-devel \
     libmaxminddb-devel \

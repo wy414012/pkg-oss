@@ -158,6 +158,7 @@ jobs:
               pcre2-devel \
               krb5-devel \
               libedit \
+              systemd \
               libxml2-devel \
               libxslt-devel \
               gd-devel \
