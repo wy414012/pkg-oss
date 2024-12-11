@@ -47,7 +47,30 @@ jobs:
 
       - name: Install build -tool
         run: |
-          apt-get install -y libssl-dev cmake lsb-release rsync libxml2-utils xsltproc devscripts quilt git libpcre2-dev libmaxminddb-dev libgd-dev libedit-dev libxml2-dev libxslt-dev libre2-dev libc-ares-dev libperl-dev libkrb5-dev libgeoip-dev libyaml-cpp-dev libboost-dev libunwind-dev golang
+          apt-get install -y \
+          libssl-dev \
+          cmake \
+          lsb-release \
+          libxml2-utils \
+          xsltproc \
+          devscripts \
+          quilt \
+          git \
+          libpcre2-dev \
+          libmaxminddb-dev \
+          libgd-dev \
+          libedit-dev \
+          libxml2-dev \
+          libxslt-dev \
+          libre2-dev \
+          libc-ares-dev \
+          libperl-dev \
+          libkrb5-dev \
+          libgeoip-dev \
+          libyaml-cpp-dev \
+          libboost-dev \
+          libunwind-dev \
+          golang
 
       - name: build boringssl
         working-directory: debian/boringssl
@@ -59,7 +82,28 @@ jobs:
 
       - name: build all
         working-directory: debian
-        run: make base module-auth-spnego module-lua module-njs module-image-filter module-geoip2 module-geoip module-subs-filter module-rtmp module-set-misc module-perl module-fips-check module-brotli module-xslt module-ndk module-headers-more module-otel module-encrypted-session module-opentracing
+        run: | 
+          make \
+          base \
+          module-auth-spnego \
+          module-brotli \
+          module-encrypted-session \
+          module-fips-check \
+          module-geoip2 \
+          module-geoip \
+          module-headers-more \
+          module-image-filter \
+          module-lua \
+          module-ndk \
+          module-njs \
+          module-opentracing \
+          module-otel \
+          module-passenger \
+          module-perl \
+          module-rtmp \
+          module-set-misc \
+          module-subs-filter \
+          module-xslt
 
       - name: Move Files
         working-directory: debian
@@ -115,7 +159,7 @@ jobs:
           repository: wy414012/ngx-fancyindex
           path: rpm/ngx-fancyindex
 
-      - name: Setup Rocky Linux
+      - name: Setup ${{ matrix.os_version }} Linux
         run: |
           dnf makecache
           (dnf install -y epel-release 'dnf-command(config-manager)' || dnf install -y epol-release 'dnf-command(config-manager)') || true
@@ -129,8 +173,42 @@ jobs:
 
       - name: Install Development Tools
         run: |
-          dnf -y groupinstall 'Development Tools'
-          dnf -y install git golang cmake libunwind-devel pcre2-devel krb5-devel libedit libxml2-devel libxslt-devel gd-devel libmaxminddb perl-ExtUtils-Embed perl-devel c-ares-devel re2-devel boost-devel libstdc++-devel yaml-cpp-devel rake brotli-devel which libatomic libedit-devel libmaxminddb-devel libstdc++-static xz
+          dnf -y install \
+              git \
+              gcc \
+              gcc-c++ \
+              make \
+              rpm-build \
+              tar \
+              golang \
+              cmake \
+              libunwind-devel \
+              pcre2-devel \
+              krb5-devel \
+              libedit \
+              systemd \
+              libxml2-devel \
+              libxslt-devel \
+              gd-devel \
+              libmaxminddb \
+              perl-ExtUtils-Embed \
+              perl-devel \
+              c-ares-devel \
+              openssl-devel \
+              re2-devel \
+              boost-devel \
+              libstdc++-devel \
+              yaml-cpp-devel \
+              rake \
+              brotli-devel \
+              which \
+              libatomic \
+              libedit-devel \
+              libmaxminddb-devel \
+              libstdc++-static \
+              lua-devel \
+              perl-macros \
+              xz
 
       - name: build boringssl
         working-directory: rpm/boringssl
@@ -145,7 +223,28 @@ jobs:
 
       - name: build all
         working-directory: rpm/SPECS
-        run: make base module-auth-spnego module-lua module-njs module-image-filter module-geoip2 module-geoip module-subs-filter module-rtmp module-set-misc module-perl module-fips-check module-brotli module-xslt module-ndk module-headers-more module-otel module-encrypted-session module-opentracing
+        run: |
+          make \
+          base \
+          module-auth-spnego \
+          module-brotli \
+          module-encrypted-session \
+          module-fips-check \
+          module-geoip2 \
+          module-geoip \
+          module-headers-more \
+          module-image-filter \
+          module-lua \
+          module-ndk \
+          module-njs \
+          module-opentracing \
+          module-otel \
+          module-passenger \
+          module-perl \
+          module-rtmp \
+          module-set-misc \
+          module-subs-filter \
+          module-xslt
 
       - name: upload artifact
         uses: actions/upload-artifact@v4
