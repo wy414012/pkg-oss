@@ -8,3 +8,5 @@ SPECS/*.rpm-changelog
 SPECS/*.skip
 SPECS/*.spec
 SRPMS
+ngx-fancyindex
+boringssl
