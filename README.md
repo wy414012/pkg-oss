@@ -17,7 +17,7 @@
    ```shell
    docker build --build-arg BASE_IMAGE=debian:12 -f Dockerfile.debian -t Ngxin-deb-debian12/v3.
    ```
-2. 可选基础镜像：`debian:11`, `debian:12`, `debian:latest`, `ubuntu:20.04`, `ubuntu:22.04`, `ubuntu:latest(24.04)`已测试通过。若要使用其他基础镜像，可在`BASE_IMAGE=debian:11`此处定义调用镜像，例如：
+2. 可选基础镜像：`debian:11`, `debian:12`, `debian:latest`, `ubuntu:22.04`, `ubuntu:latest(24.04)`已测试通过。若要使用其他基础镜像，可在`BASE_IMAGE=debian:11`此处定义调用镜像，例如：
    ```shell
    docker build --build-arg BASE_IMAGE=debian:11 -f Dockerfile.debian -t Ngxin-deb-debian11/v3.
    ```

@@ -31,7 +31,8 @@ jobs:
         with:
           repository: google/boringssl
           path: debian/boringssl
-
+#          ref: ${{ matrix.os_version == 'Debian-11' && '781a72b2aa513bbbf01b9bc670b0495a6b115968' || 'master' }}
+          
       - uses: actions/checkout@v4
         with:
           repository: wy414012/ngx-fancyindex
@@ -40,9 +41,34 @@ jobs:
       - name: Update apt
         run: apt-get update
 
-      - name: Install build -tool
+      - name: Install build-tools
         run: |
-          apt-get install -y libssl-dev cmake lsb-release rsync libxml2-utils xsltproc devscripts quilt git libpcre2-dev libmaxminddb-dev libgd-dev libedit-dev libxml2-dev libxslt-dev libre2-dev libc-ares-dev libperl-dev libkrb5-dev libgeoip-dev libyaml-cpp-dev libboost-dev libunwind-dev golang
+          apt-get install -y \
+            libssl-dev \
+            cmake \
+            lsb-release \
+            libxml2-utils \
+            xsltproc \
+            devscripts \
+            quilt \
+            git \
+            libpcre2-dev \
+            libmaxminddb-dev \
+            libgd-dev \
+            libedit-dev \
+            libxml2-dev \
+            libxslt-dev \
+            libre2-dev \
+            libc-ares-dev \
+            libperl-dev \
+            libkrb5-dev \
+            libgeoip-dev \
+            libyaml-cpp-dev \
+            libboost-dev \
+            libunwind-dev \
+            systemd \
+            golang \
+            rake
 
       - name: build boringssl
         working-directory: debian/boringssl
@@ -54,7 +80,27 @@ jobs:
 
       - name: build all
         working-directory: debian
-        run: make base module-auth-spnego module-lua module-njs module-image-filter module-geoip2 module-geoip module-subs-filter module-rtmp module-set-misc module-perl module-fips-check module-brotli module-xslt module-ndk module-headers-more module-otel module-encrypted-session module-opentracing
+        run: |
+          make \
+            base \
+            module-auth-spnego \
+            module-lua \
+            module-njs \
+            module-image-filter \
+            module-geoip2 \
+            module-geoip \
+            module-subs-filter \
+            module-rtmp \
+            module-set-misc \
+            module-perl \
+            module-fips-check \
+            module-brotli \
+            module-xslt \
+            module-ndk \
+            module-headers-more \
+            module-otel \
+            module-encrypted-session \
+            module-passenger
 
       - name: Move Files
         working-directory: debian
@@ -116,7 +162,7 @@ jobs:
           (dnf install -y epel-release 'dnf-command(config-manager)' || dnf install -y epol-release 'dnf-command(config-manager)') || true
           if [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
             dnf config-manager --set-enabled powertools
-            dnf -y install gcc-toolset-10-gcc-c++
+            dnf -y install gcc-toolset-11-gcc-c++
           elif [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-rockylinux9-amd64" ]]; then
             dnf config-manager --set-enabled crb
           fi
@@ -124,28 +170,76 @@ jobs:
 
       - name: Install Development Tools
         run: |
-          dnf -y groupinstall 'Development Tools'
-          dnf -y install git golang cmake libunwind-devel pcre2-devel krb5-devel libedit libxml2-devel libxslt-devel gd-devel libmaxminddb perl-ExtUtils-Embed perl-devel c-ares-devel re2-devel boost-devel libstdc++-devel yaml-cpp-devel rake brotli-devel which libatomic libedit-devel libmaxminddb-devel libstdc++-static xz
+          dnf -y install \
+              git \
+              gcc \
+              gcc-c++ \
+              make \
+              rpm-build \
+              tar \
+              golang \
+              cmake \
+              libunwind-devel \
+              pcre2-devel \
+              krb5-devel \
+              libedit \
+              libxml2-devel \
+              libxslt-devel \
+              gd-devel \
+              libmaxminddb \
+              perl-ExtUtils-Embed \
+              perl-devel \
+              c-ares-devel \
+              openssl-devel \
+              re2-devel \
+              boost-devel \
+              libstdc++-devel \
+              yaml-cpp-devel \
+              rake \
+              brotli-devel \
+              which \
+              libatomic \
+              libedit-devel \
+              libmaxminddb-devel \
+              libstdc++-static \
+              lua-devel \
+              perl-macros \
+              xz
 
       - name: build boringssl
         working-directory: rpm/boringssl
         run: |
           if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
-          source /opt/rh/gcc-toolset-10/enable
+          source /opt/rh/gcc-toolset-11/enable
           fi
           mkdir build && \
           cd build && \
-          cmake -DCMAKE_BUILD_TYPE=Release .. && \
+          cmake -DOPENSSL_SMALL=1 -DCMAKE_BUILD_TYPE=Release .. && \
           make -j $(nproc)
-
-#      - name: Replace RHEL with OC for OpenCloudOS Linux 9
-#        if: ${{ matrix.os == 'ghcr.io/wy414012/pkg-oss:latest-opencloudos9-amd64' }}
-#        working-directory: rpm/SPECS
-#        run: grep -rl "0%{?rhel}" . | xargs sed -i 's/0%{?rhel}/0%{?oc}/g'
 
       - name: build all
         working-directory: rpm/SPECS
-        run: make base module-auth-spnego module-lua module-njs module-image-filter module-geoip2 module-geoip module-subs-filter module-rtmp module-set-misc module-perl module-fips-check module-brotli module-xslt module-ndk module-headers-more module-otel module-encrypted-session module-opentracing
+        run: |
+          make \
+          base \
+          module-auth-spnego \
+          module-brotli \
+          module-encrypted-session \
+          module-fips-check \
+          module-geoip2 \
+          module-geoip \
+          module-headers-more \
+          module-image-filter \
+          module-lua \
+          module-ndk \
+          module-njs \
+          module-otel \
+          module-passenger \
+          module-perl \
+          module-rtmp \
+          module-set-misc \
+          module-subs-filter \
+          module-xslt
 
       - name: upload artifact
         uses: actions/upload-artifact@v4
@@ -156,14 +250,117 @@ jobs:
               ./rpm/SRPMS
            compression-level: 0
 
-      - name: build clean
-        working-directory: rpm/SPECS
-        run: make clean
+  apk:
+    name: "Nginx-BoringSSL (${{ matrix.os_name }} ${{ matrix.os_version }})"        
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: "modules"
+            os_name: "alpine"
+            os_version: "v3.20"
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4 
+      - uses: actions/checkout@v4
+        with:
+          repository: google/boringssl
+          path: alpine/boringssl
+          ref: master
+          
+      - uses: actions/checkout@v4
+        with:
+          repository: wy414012/ngx-fancyindex
+          path: alpine/ngx-fancyindex
+
+      - name: Setup Alpine Linux
+        uses: jirutka/setup-alpine@v1
+        with:
+          branch: v3.20
+          packages: >
+            abuild
+            build-base
+            coreutils
+            curl
+            findutils
+            git
+            make
+            xz
+            cmake
+            go
+            libunwind
+            libunwind-dev
+
+      - name: set build ${{ matrix.target }} 
+        shell: alpine.sh {0}
+        working-directory: alpine
+        run: |
+          targets=""
+          case ${{ matrix.target }} in
+            base)
+              targets="base"
+            ;;
+            modules)
+              targets="base"
+              for target in $(make list-all-modules | cut -d ' ' -f 1); do
+                targets="$targets module-$target";
+              done
+            ;;
+          esac
+          echo TARGETS=$targets >> $GITHUB_ENV
+
+      - name: Create depends
+        shell: alpine.sh {0}
+        working-directory: alpine
+        run: |
+          for target in $TARGETS; do
+            make abuild-$target;
+          done
+
+      - name: Install depends
+        shell: alpine.sh --root {0}
+        working-directory: alpine
+        run: |
+          for target in ${TARGETS}; do
+            apk add $(. ./abuild-${target}/APKBUILD; echo $makedepends;)
+          done
+
+      - name: build boringssl
+        shell: alpine.sh {0}
+        working-directory: alpine/boringssl
+        run: |
+          mkdir build && \
+          cd build && \
+          cmake -DOPENSSL_SMALL=1 -DCMAKE_BUILD_TYPE=Release .. && \
+          make -j $(nproc)
+
+      - name: Build ${{ matrix.target }}
+        shell: alpine.sh {0}
+        working-directory: alpine
+        run: |
+          for target in $TARGETS; do
+            make $target;
+          done
+
+      - name: Copy apk
+        shell: alpine.sh {0}
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p ./apk
+          find ~/packages/alpine -type f -exec cp {} ./apk/ \;
+
+      - name: upload ${{ matrix.target }} artifact
+        uses: actions/upload-artifact@v4
+        with:
+           name: apk-${{ matrix.target }}
+           path: ./apk/*.apk
+           compression-level: 0        
   deploy:
     name: "Rsync Nginx Packages"
     needs:
       - deb
       - rpm
+      - apk
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -186,6 +383,10 @@ jobs:
           - os_type: "bookworm"
             target_folder: "debian/bookworm/mainline/"
             package_type: "deb"
+          - os_type: "modules"
+            target_folder: "alpine/mainline/"
+            package_type: "apk"
+
     continue-on-error: true  # 确保即使某个任务失败，其他任务仍然会继续执行
     steps:
       - name: Download ${{matrix.package_type}}-${{matrix.os_type}}
@@ -207,6 +408,8 @@ jobs:
           echo "StrictHostKeyChecking no" >> ~/.ssh/config
           if [ "$PACKAGE_TYPE" == "rpm" ]; then
             rsync -avz --progress ./{RPMS/x86_64,SRPMS} $SECRET_CHECK_SCRIPT_URL$TARGET_FOLDER
+          elif [ "$PACKAGE_TYPE" == "apk" ]; then
+            rsync -avz --progress ./*.apk $SECRET_CHECK_SCRIPT_URL$TARGET_FOLDER  
           else
             rsync -avz --progress ./nginx* $SECRET_CHECK_SCRIPT_URL$TARGET_FOLDER
           fi

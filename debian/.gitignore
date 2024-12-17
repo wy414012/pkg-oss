@@ -6,3 +6,6 @@ module-*
 rules-*
 *.skip
 *.tar.*
+ngx-fancyindex
+boringssl
+deb/

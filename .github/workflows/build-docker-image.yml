@@ -15,6 +15,8 @@ jobs:
         build-config:
           - { name: "Debian 11", file: "Dockerfile.debian", base_image: "debian:11", tag_suffix: "debian11" }
           - { name: "Debian 12", file: "Dockerfile.debian", base_image: "debian:12", tag_suffix: "debian12" }
+          - { name: "ubuntu 2204", file: "Dockerfile.debian", base_image: "ubuntu:22.04", tag_suffix: "ubuntu2204" }
+          - { name: "ubuntu 2404", file: "Dockerfile.debian", base_image: "ubuntu:24.04", tag_suffix: "ubuntu2404" }
           - { name: "Rocky Linux 8", file: "Dockerfile.rehat", base_image: "rockylinux/rockylinux:8", tag_suffix: "rockylinux8" }
           - { name: "Rocky Linux 9", file: "Dockerfile.rehat", base_image: "rockylinux/rockylinux:9", tag_suffix: "rockylinux9" }
           - { name: "OpenCloud OS 9.0", file: "Dockerfile.rehat", base_image: "opencloudos/opencloudos9-minimal:latest", tag_suffix: "opencloudos9" }
@@ -58,5 +60,4 @@ jobs:
           build-args: |
             BASE_IMAGE=${{ matrix.build-config.base_image }}
           tags: |
-            ghcr.io/${{ env.GHCR_IMAGE_NAMESPACE }}/pkg-oss:${{ env.LATEST_TAG }}-${{ matrix.build-config.tag_suffix }}-amd64,
-            ghcr.io/${{ env.GHCR_IMAGE_NAMESPACE }}/pkg-oss:${{ env.TAG }}-${{ matrix.build-config.tag_suffix }}-amd64
+            ghcr.io/${{ env.GHCR_IMAGE_NAMESPACE }}/pkg-oss:${{ env.LATEST_TAG }}-${{ matrix.build-config.tag_suffix }}-amd64

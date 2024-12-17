@@ -11,37 +11,43 @@ RUN dnf makecache && \
     (dnf config-manager --set-enabled powertools || dnf config-manager --set-enabled crb) || true && \
     dnf repolist && \
     dnf update -y && \
-    dnf -y groupinstall 'Development Tools' && \
     (dnf -y install gcc-toolset-10-gcc-c++) || true && \
     dnf -y install \
-        git \
-        tar \
-        golang \
-        cmake \
-        libunwind-devel \
-        pcre2-devel \
-        krb5-devel \
-        libedit \
-        libxml2-devel \
-        libxslt-devel \
-        gd-devel \
-        libmaxminddb \
-        perl-ExtUtils-Embed \
-        perl-devel \
-        c-ares-devel \
-        openssl-devel \
-        re2-devel \
-        boost-devel \
-        libstdc++-devel \
-        yaml-cpp-devel \
-        rake \
-        brotli-devel \
-        which \
-        libatomic \
-        libedit-devel \
-        libmaxminddb-devel \
-        libstdc++-static \
-        xz && \
+    git \
+    gcc \
+    gcc-c++ \
+    make \
+    rpm-build \
+    tar \
+    golang \
+    cmake \
+    libunwind-devel \
+    pcre2-devel \
+    krb5-devel \
+    libedit \
+    libxml2-devel \
+    libxslt-devel \
+    gd-devel \
+    libmaxminddb \
+    perl-ExtUtils-Embed \
+    perl-devel \
+    c-ares-devel \
+    openssl-devel \
+    re2-devel \
+    boost-devel \
+    libstdc++-devel \
+    yaml-cpp-devel \
+    rake \
+    brotli-devel \
+    which \
+    systemd \
+    libatomic \
+    libedit-devel \
+    libmaxminddb-devel \
+    libstdc++-static \
+    lua-devel \
+    perl-macros \
+    xz && \
     dnf clean all && \
     rm -rf /var/cache/* \
     
