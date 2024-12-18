@@ -1,17 +1,17 @@
-ARG BASE_IMAGE=opencloudos/opencloudos:9.0
+ARG BASE_IMAGE=rockylinux/rockylinux:8
 # 使用外部传参
 FROM ${BASE_IMAGE}
 
 LABEL maintainer="ymwl <ymwlpoolc@qq.com>"
 LABEL description="pkg-oss nginx-boringssl build ."
-ENV LANG=en_US.UTF-8
 
 RUN dnf makecache && \
     (dnf install -y epel-release || dnf install -y epol-release 'dnf-command(config-manager)') && \
     (dnf config-manager --set-enabled powertools || dnf config-manager --set-enabled crb) || true && \
     dnf repolist && \
     dnf update -y && \
-    (dnf -y install gcc-toolset-10-gcc-c++) || true && \
+    (dnf -y install gcc-toolset-11-gcc-c++) || true && \
+    dnf -y groupinstall 'Development Tools' && \
     dnf -y install \
     git \
     gcc \
@@ -21,6 +21,7 @@ RUN dnf makecache && \
     tar \
     golang \
     cmake \
+    systemd \
     libunwind-devel \
     pcre2-devel \
     krb5-devel \

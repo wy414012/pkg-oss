@@ -30,8 +30,7 @@ jobs:
         with:
           repository: google/boringssl
           path: debian/boringssl
-          ref: master
-#          ref: ${{ matrix.os_version == 'Debian-11' && '781a72b2aa513bbbf01b9bc670b0495a6b115968' || 'master' }} 由于官方已经修复无法构建的bug现在恢复为master
+          ref: b6eec48a579eff1abe70ce6d480a017d6ca3a32c #0.20241209.0
           
       - uses: actions/checkout@v4
         with:
@@ -73,6 +72,7 @@ jobs:
       - name: build boringssl
         working-directory: debian/boringssl
         run: |
+          grep -rl "OpenSSL 1.1.1 (compatible; BoringSSL)". | xargs sed -i "s/OpenSSL 1.1.1 (compatible; BoringSSL)/BoringSSL Version_GitHash:$(git log --pretty=format:"%h" -n1) Build_Date:$(date +"%Y-%m-%d %H:%M:%S") (compatible; BoringSSL)/g"
           mkdir build && \
           cd build && \
           cmake -DOPENSSL_SMALL=1 -DCMAKE_BUILD_TYPE=Release .. && \
@@ -81,10 +81,6 @@ jobs:
       - name: build base
         working-directory: debian
         run: make base
-
-      - name: build clean
-        working-directory: debian
-        run: make clean
 
       - name: Move Files
         working-directory: debian
@@ -125,6 +121,7 @@ jobs:
         with:
           repository: google/boringssl
           path: rpm/boringssl
+          ref: b6eec48a579eff1abe70ce6d480a017d6ca3a32c #0.20241209.0
 
       - uses: actions/checkout@v4
         with:
@@ -188,6 +185,7 @@ jobs:
           if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
           source /opt/rh/gcc-toolset-11/enable
           fi
+          grep -rl "OpenSSL 1.1.1 (compatible; BoringSSL)". | xargs sed -i "s/OpenSSL 1.1.1 (compatible; BoringSSL)/BoringSSL Version_GitHash:$(git log --pretty=format:"%h" -n1) Build_Date:$(date +"%Y-%m-%d %H:%M:%S") (compatible; BoringSSL)/g"
           mkdir build && \
           cd build && \
           cmake -DOPENSSL_SMALL=1 -DCMAKE_BUILD_TYPE=Release .. && \
@@ -196,10 +194,6 @@ jobs:
       - name: build base
         working-directory: rpm/SPECS
         run: make base
-
-      - name: build clean
-        working-directory: rpm/SPECS
-        run: make clean
 
       - name: upload artifact
         uses: actions/upload-artifact@v4
@@ -226,7 +220,7 @@ jobs:
         with:
           repository: google/boringssl
           path: alpine/boringssl
-          ref: master
+          ref: b6eec48a579eff1abe70ce6d480a017d6ca3a32c #0.20241209.0
           
       - uses: actions/checkout@v4
         with:
@@ -250,6 +244,9 @@ jobs:
             go
             libunwind
             libunwind-dev
+            grep
+            sed
+            date
 
       - name: set build ${{ matrix.target }} 
         shell: alpine.sh {0}
@@ -289,6 +286,7 @@ jobs:
         shell: alpine.sh {0}
         working-directory: alpine/boringssl
         run: |
+          grep -rl "OpenSSL 1.1.1 (compatible; BoringSSL)". | xargs sed -i "s/OpenSSL 1.1.1 (compatible; BoringSSL)/BoringSSL Version_GitHash:$(git log --pretty=format:"%h" -n1) Build_Date:$(date +"%Y-%m-%d %H:%M:%S") (compatible; BoringSSL)/g"
           mkdir build && \
           cd build && \
           cmake -DOPENSSL_SMALL=1 -DCMAKE_BUILD_TYPE=Release .. && \

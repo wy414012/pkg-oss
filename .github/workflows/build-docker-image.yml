@@ -17,11 +17,11 @@ jobs:
           - { name: "Debian 12", file: "Dockerfile.debian", base_image: "debian:12", tag_suffix: "debian12" }
           - { name: "ubuntu 2204", file: "Dockerfile.debian", base_image: "ubuntu:22.04", tag_suffix: "ubuntu2204" }
           - { name: "ubuntu 2404", file: "Dockerfile.debian", base_image: "ubuntu:24.04", tag_suffix: "ubuntu2404" }
-          - { name: "Rocky Linux 8", file: "Dockerfile.rehat", base_image: "rockylinux/rockylinux:8", tag_suffix: "rockylinux8" }
-          - { name: "Rocky Linux 9", file: "Dockerfile.rehat", base_image: "rockylinux/rockylinux:9", tag_suffix: "rockylinux9" }
-          - { name: "OpenCloud OS 9.0", file: "Dockerfile.rehat", base_image: "opencloudos/opencloudos9-minimal:latest", tag_suffix: "opencloudos9" }
-          - { name: "TenCentos OS 4", file: "Dockerfile.rehat", base_image: "tencentos/tencentos4-minimal:latest", tag_suffix: "tencentos4" }
-          - { name: "CentOS 7", file: "Dockerfile.rehat.7", base_image: "centos:centos7", tag_suffix: "centos7" }
+          - { name: "Rocky Linux 8", file: "Dockerfile.redhat", base_image: "rockylinux/rockylinux:8", tag_suffix: "rockylinux8" }
+          - { name: "Rocky Linux 9", file: "Dockerfile.redhat", base_image: "rockylinux/rockylinux:9", tag_suffix: "rockylinux9" }
+          - { name: "OpenCloud OS 9.0", file: "Dockerfile.redhat", base_image: "opencloudos/opencloudos9-minimal:latest", tag_suffix: "opencloudos9" }
+          - { name: "TenCentos OS 4", file: "Dockerfile.redhat", base_image: "tencentos/tencentos4-minimal:latest", tag_suffix: "tencentos4" }
+          - { name: "CentOS 7", file: "Dockerfile.redhat.7", base_image: "centos:centos7", tag_suffix: "centos7" }
     continue-on-error: true  # 确保即使某个任务失败，其他任务仍然会继续执行
     steps:
       - name: Checkout code
