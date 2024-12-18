@@ -113,7 +113,7 @@ BuildRequires: pcre2-devel
 Provides: webserver
 Provides: nginx-r%{base_version}
 
-%if !(0%{?rhel} == 7) || !(0%{?oc} == 7) || !(0%{?tencentos} == 2)
+%if (0%{?rhel} > 7) || (0%{?oc} > 7) || (0%{?tencentos} > 2)
 Recommends: logrotate
 %endif
 
