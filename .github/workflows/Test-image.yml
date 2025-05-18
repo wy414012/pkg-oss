@@ -133,10 +133,14 @@ jobs:
           dnf makecache
           (dnf install -y epel-release 'dnf-command(config-manager)' || dnf install -y epol-release 'dnf-command(config-manager)') || true
           if [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
-            dnf config-manager --set-enabled powertools
-            dnf -y install gcc-toolset-11-gcc-c++
+            dnf config-manager --set-enabled powertools            
           elif [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-rockylinux9-amd64" ]]; then
             dnf config-manager --set-enabled crb
+          fi
+          if [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
+            dnf -y install gcc-toolset-11-gcc-c++
+          else
+            dnf -y install gcc-toolset-14-gcc-c++
           fi
           dnf update -y
 
@@ -184,6 +188,8 @@ jobs:
         run: |
           if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
           source /opt/rh/gcc-toolset-11/enable
+          else
+          source /opt/rh/gcc-toolset-14/enable
           fi
           grep -rl "OpenSSL 1.1.1 (compatible; BoringSSL)". | xargs sed -i "s/OpenSSL 1.1.1 (compatible; BoringSSL)/BoringSSL Version_GitHash:$(git log --pretty=format:"%h" -n1) Build_Date:$(date +"%Y-%m-%d %H:%M:%S") (compatible; BoringSSL)/g"
           mkdir build && \
