@@ -121,7 +121,7 @@ jobs:
         with:
           repository: google/boringssl
           path: rpm/boringssl
-          ref: b6eec48a579eff1abe70ce6d480a017d6ca3a32c #0.20241209.0
+          ref: main #b6eec48a579eff1abe70ce6d480a017d6ca3a32c #0.20241209.0
 
       - uses: actions/checkout@v4
         with:
@@ -220,7 +220,7 @@ jobs:
         with:
           repository: google/boringssl
           path: alpine/boringssl
-          ref: b6eec48a579eff1abe70ce6d480a017d6ca3a32c #0.20241209.0
+          ref: main #b6eec48a579eff1abe70ce6d480a017d6ca3a32c #0.20241209.0
           
       - uses: actions/checkout@v4
         with:

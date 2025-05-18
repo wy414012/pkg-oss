@@ -79,7 +79,7 @@ Requires(pre): shadow-utils
 
 %define spec_dir %{_sourcedir}
 %define WITH_CC_OPT -I %{spec_dir}/../boringssl/include -x c
-%define WITH_LD_OPT -L %{spec_dir}/../boringssl/build/ssl -L %{spec_dir}/../boringssl/build/crypto
+%define WITH_LD_OPT -L %{spec_dir}/../boringssl/build
 
 %define BASE_CONFIGURE_ARGS $(echo "%%BASE_CONFIGURE_ARGS%%")
 

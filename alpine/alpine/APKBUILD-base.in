@@ -63,10 +63,10 @@ build() {
                 _make_opts="-j$_nproc"
         fi
 
-        CFLAGS= ./configure %%BASE_CONFIGURE_ARGS%% --with-cc=c++ --with-cc-opt="-I $srcdir/../../boringssl/include -x c" --with-ld-opt="-L $srcdir/../../boringssl/build/ssl -L $srcdir/../../boringssl/build/crypto" --with-debug
+        CFLAGS= ./configure %%BASE_CONFIGURE_ARGS%% --with-cc=c++ --with-cc-opt="-I $srcdir/../../boringssl/include -x c" --with-ld-opt="-L $srcdir/../../boringssl/build" --with-debug
         make $_make_opts
         mv objs/nginx objs/nginx-debug
-        CFLAGS= ./configure %%BASE_CONFIGURE_ARGS%% --with-cc=c++ --with-cc-opt="-I $srcdir/../../boringssl/include -x c" --with-ld-opt="-L $srcdir/../../boringssl/build/ssl -L $srcdir/../../boringssl/build/crypto"
+        CFLAGS= ./configure %%BASE_CONFIGURE_ARGS%% --with-cc=c++ --with-cc-opt="-I $srcdir/../../boringssl/include -x c" --with-ld-opt="-L $srcdir/../../boringssl/build"
         make $_make_opts
 }
 
