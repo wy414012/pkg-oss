@@ -30,7 +30,7 @@ jobs:
         with:
           repository: google/boringssl
           path: debian/boringssl
-          ref: b6eec48a579eff1abe70ce6d480a017d6ca3a32c #0.20241209.0
+          ref: main #b6eec48a579eff1abe70ce6d480a017d6ca3a32c #0.20241209.0
           
       - uses: actions/checkout@v4
         with:
@@ -72,6 +72,9 @@ jobs:
       - name: build boringssl
         working-directory: debian/boringssl
         run: |
+          if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-debian12-amd64" ]]; then
+          sed -i 's/-Werror/-Werror -Wno-array-bounds/' CMakeLists.txt
+          fi
           grep -rl "OpenSSL 1.1.1 (compatible; BoringSSL)". | xargs sed -i "s/OpenSSL 1.1.1 (compatible; BoringSSL)/BoringSSL Version_GitHash:$(git log --pretty=format:"%h" -n1) Build_Date:$(date +"%Y-%m-%d %H:%M:%S") (compatible; BoringSSL)/g"
           mkdir build && \
           cd build && \
