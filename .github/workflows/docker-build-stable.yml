@@ -9,6 +9,7 @@ on:
   push:
     branches:
       - stable-1.28
+  workflow_dispatch:
 
 jobs:
   deb:
@@ -23,12 +24,15 @@ jobs:
           - os: "ghcr.io/wy414012/pkg-oss:latest-debian12-amd64"
             os_version: "Debian-12"
             os_type: "bookworm"
+          - os: "ghcr.io/wy414012/pkg-oss:latest-debian13-amd64"
+            os_version: "Debian-13"
+            os_type: "trixie"
     container:
       image: ${{ matrix.os }}
     continue-on-error: true
     defaults:
       run:
-        shell: bash
+        shell: bash -E -x {0}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -128,12 +132,15 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: "ghcr.io/wy414012/pkg-oss:latest-rockylinux9-amd64"
-            os_version: "Rocky Linux 9"
-            os_type: "rockylinux9"
-          - os: "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64"
-            os_version: "Rocky Linux 8"
-            os_type: "rockylinux8"
+          - os: "ghcr.io/wy414012/pkg-oss:latest-almalinux8-amd64"
+            os_version: "AlmaLinux 8"
+            os_type: "almalinux8"
+          - os: "ghcr.io/wy414012/pkg-oss:latest-almalinux9-amd644"
+            os_version: "AlmaLinux 9"
+            os_type: "almalinux9"
+          - os: "ghcr.io/wy414012/pkg-oss:latest-almalinux10-amd644"
+            os_version: "AlmaLinux 10"
+            os_type: "almalinux10"
           - os: "ghcr.io/wy414012/pkg-oss:latest-opencloudos9-amd64"
             os_version: "OpenCloudOS 9"
             os_type: "opencloudos9"
@@ -145,7 +152,7 @@ jobs:
     continue-on-error: true
     defaults:
       run:
-        shell: bash
+        shell: bash -E -x {0}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -164,10 +171,12 @@ jobs:
         run: |
           dnf makecache
           (dnf install -y epel-release 'dnf-command(config-manager)' || dnf install -y epol-release 'dnf-command(config-manager)') || true
-          if [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
+          if [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-almalinux8-amd64" ]]; then
             dnf config-manager --set-enabled powertools
-            dnf -y install gcc-toolset-11-gcc-c++
-          elif [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-rockylinux9-amd64" ]]; then
+            dnf -y install gcc-toolset-11-gcc-c++            
+          elif [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-almalinux9-amd64" ]]; then
+            dnf config-manager --set-enabled crb
+          elif [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-almalinux10-amd64" ]]; then
             dnf config-manager --set-enabled crb
           fi
           dnf update -y
@@ -214,7 +223,7 @@ jobs:
       - name: build boringssl
         working-directory: rpm/boringssl
         run: |
-          if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
+          if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-almalinux8-amd64" ]]; then
           source /opt/rh/gcc-toolset-11/enable
           fi
           if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-tencentos4-amd64" ]]; then
@@ -222,7 +231,7 @@ jobs:
           fi
           if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-opencloudos9-amd64" ]]; then
           sed -i 's/-Werror/-Werror -Wno-array-bounds/' CMakeLists.txt
-          fi          
+          fi      
           grep -rl "OpenSSL 1.1.1 (compatible; BoringSSL)". | xargs sed -i "s/OpenSSL 1.1.1 (compatible; BoringSSL)/BoringSSL Version_GitHash:$(git log --pretty=format:"%h" -n1) Build_Date:$(date +"%Y-%m-%d %H:%M:%S") (compatible; BoringSSL)/g"
           mkdir build && \
           cd build && \
@@ -380,10 +389,13 @@ jobs:
     strategy:
       matrix:
         include:
-          - os_type: "rockylinux9"
+          - os_type: "almalinux10"
+            target_folder: "centos/stable/10/"
+            package_type: "rpm"
+          - os_type: "almalinux9"
             target_folder: "centos/stable/9/"
             package_type: "rpm"
-          - os_type: "rockylinux8"
+          - os_type: "almalinux8"
             target_folder: "centos/stable/8/"
             package_type: "rpm"
           - os_type: "opencloudos9"
@@ -397,6 +409,9 @@ jobs:
             package_type: "deb"
           - os_type: "bookworm"
             target_folder: "debian/bookworm/stable/"
+            package_type: "deb"
+          - os_type: "trixie"
+            target_folder: "debian/trixie/stable/"
             package_type: "deb"
           - os_type: "modules"
             target_folder: "alpine/stable/"
