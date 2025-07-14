@@ -16,13 +16,14 @@ jobs:
             os_version: "Debian-11"
           - os: "ghcr.io/wy414012/pkg-oss:latest-debian12-amd64"
             os_version: "Debian-12"
-
+          - os: "ghcr.io/wy414012/pkg-oss:latest-debian13-amd64"
+            os_version: "Debian-13"
     container:
       image: ${{ matrix.os }}
     continue-on-error: true  # 确保即使某个任务失败，其他任务仍然会继续执行
     defaults:
       run:
-        shell: bash
+        shell: bash -E -x {0}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -68,7 +69,6 @@ jobs:
          golang \
          rake
 
-
       - name: build boringssl
         working-directory: debian/boringssl
         run: |
@@ -107,16 +107,18 @@ jobs:
             os_version: "OpenCloudOS 9"
           - os: "ghcr.io/wy414012/pkg-oss:latest-tencentos4-amd64"
             os_version: "TenCentOS 4"
-          - os: "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64"
-            os_version: "Rocky Linux 8"
-          - os: "ghcr.io/wy414012/pkg-oss:latest-rockylinux9-amd64"
-            os_version: "Rocky Linux 9"
+          - os: "ghcr.io/wy414012/pkg-oss:latest-almalinux8-amd64"
+            os_version: "AlmaLinux 8"
+          - os: "ghcr.io/wy414012/pkg-oss:latest-almalinux9-amd64"
+            os_version: "AlmaLinux 9"
+          - os: "ghcr.io/wy414012/pkg-oss:latest-almalinux10-amd64"
+            os_version: "AlmaLinux 10"
     container:
       image: ${{ matrix.os }}
     continue-on-error: true  # 确保即使某个任务失败，其他任务仍然会继续执行
     defaults:
       run:
-        shell: bash
+        shell: bash -E -x {0}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -135,10 +137,12 @@ jobs:
         run: |
           dnf makecache
           (dnf install -y epel-release 'dnf-command(config-manager)' || dnf install -y epol-release 'dnf-command(config-manager)') || true
-          if [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
+          if [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-almalinux8-amd64" ]]; then
             dnf config-manager --set-enabled powertools
             dnf -y install gcc-toolset-11-gcc-c++            
-          elif [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-rockylinux9-amd64" ]]; then
+          elif [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-almalinux9-amd64" ]]; then
+            dnf config-manager --set-enabled crb
+          elif [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-almalinux10-amd64" ]]; then
             dnf config-manager --set-enabled crb
           fi
           dnf update -y
@@ -185,7 +189,7 @@ jobs:
       - name: build boringssl
         working-directory: rpm/boringssl
         run: |
-          if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-rockylinux8-amd64" ]]; then
+          if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-almalinux8-amd64" ]]; then
           source /opt/rh/gcc-toolset-11/enable
           fi
           if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-tencentos4-amd64" ]]; then
