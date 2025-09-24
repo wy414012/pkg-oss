@@ -12,8 +12,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: "ghcr.io/wy414012/pkg-oss:latest-debian11-amd64"
-            os_version: "Debian-11"
           - os: "ghcr.io/wy414012/pkg-oss:latest-debian12-amd64"
             os_version: "Debian-12"
           - os: "ghcr.io/wy414012/pkg-oss:latest-debian13-amd64"
@@ -325,4 +323,5 @@ jobs:
         with:
            name: apk-${{ matrix.target }}
            path: ./apk/*.apk
+
            compression-level: 0
