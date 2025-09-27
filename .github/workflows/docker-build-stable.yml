@@ -1,16 +1,9 @@
 name: "docker build stable"
 
 on:
-  release:
-    types: [published]
-  pull_request:
-    paths-ignore:
-      - "README.md"
-  push:
-    branches:
-      - stable-1.28
   workflow_dispatch:
-
+permissions:
+  contents: read
 jobs:
   deb:
     name: "Nginx-BoringSSL (${{ matrix.os_version }})"
