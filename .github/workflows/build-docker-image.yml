@@ -13,7 +13,6 @@ jobs:
     strategy:
       matrix:
         build-config:
-          - { name: "Debian 11", file: "Dockerfile.debian", base_image: "debian:11", tag_suffix: "debian11" }
           - { name: "Debian 12", file: "Dockerfile.debian", base_image: "debian:12", tag_suffix: "debian12" }
           - { name: "Debian 13", file: "Dockerfile.debian", base_image: "debian:trixie", tag_suffix: "debian13" }  
           - { name: "AlmaLinux 8", file: "Dockerfile.redhat", base_image: "almalinux:8", tag_suffix: "almalinux8" }
@@ -21,7 +20,6 @@ jobs:
           - { name: "AlmaLinux 10", file: "Dockerfile.redhat", base_image: "almalinux:10", tag_suffix: "almalinux10" }
           - { name: "OpenCloud OS 9.0", file: "Dockerfile.redhat", base_image: "opencloudos/opencloudos9-minimal:latest", tag_suffix: "opencloudos9" }
           - { name: "TenCentos OS 4", file: "Dockerfile.redhat", base_image: "tencentos/tencentos4-minimal:latest", tag_suffix: "tencentos4" }
-          - { name: "CentOS 7", file: "Dockerfile.redhat.7", base_image: "centos:centos7", tag_suffix: "centos7" }
     continue-on-error: true  # 确保即使某个任务失败，其他任务仍然会继续执行
     steps:
       - name: Checkout code

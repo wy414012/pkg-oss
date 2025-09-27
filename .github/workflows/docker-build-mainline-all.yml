@@ -12,9 +12,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: "ghcr.io/wy414012/pkg-oss:latest-debian11-amd64"
-            os_version: "Debian-11"
-            os_type: "bullseye"
           - os: "ghcr.io/wy414012/pkg-oss:latest-debian12-amd64"
             os_version: "Debian-12"
             os_type: "bookworm"
@@ -401,9 +398,6 @@ jobs:
           - os_type: "tencentos4"
             target_folder: "tencentos/mainline/4/"
             package_type: "rpm"
-          - os_type: "bullseye"
-            target_folder: "debian/bullseye/mainline/"
-            package_type: "deb"
           - os_type: "bookworm"
             target_folder: "debian/bookworm/mainline/"
             package_type: "deb"
