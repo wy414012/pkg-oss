@@ -24,14 +24,14 @@ jobs:
         shell: bash -E -x {0}
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           repository: google/boringssl
           path: debian/boringssl
           ref: main #b6eec48a579eff1abe70ce6d480a017d6ca3a32c #0.20241209.0
           
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: wy414012/ngx-fancyindex
           path: debian/ngx-fancyindex
@@ -119,14 +119,14 @@ jobs:
         shell: bash -E -x {0}
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           repository: google/boringssl
           path: rpm/boringssl
           ref: main #b6eec48a579eff1abe70ce6d480a017d6ca3a32c #0.20241209.0
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: wy414012/ngx-fancyindex
           path: rpm/ngx-fancyindex
@@ -226,14 +226,14 @@ jobs:
             os_version: "v3.20"
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5 
+      - uses: actions/checkout@v5
         with:
           repository: google/boringssl
           path: alpine/boringssl
           ref: main #b6eec48a579eff1abe70ce6d480a017d6ca3a32c #0.20241209.0
           
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: wy414012/ngx-fancyindex
           path: alpine/ngx-fancyindex
