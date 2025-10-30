@@ -5,7 +5,7 @@ MODULE_SUMMARY_acme=	nginx-acme
 include $(CONTRIB)/src/nginx-acme/version
 
 MODULE_VERSION_acme=	$(NGINX_ACME_VERSION)
-MODULE_RELEASE_acme=	2
+MODULE_RELEASE_acme=	1
 
 MODULE_VERSION_PREFIX_acme=$(MODULE_TARGET_PREFIX)
 
@@ -25,7 +25,7 @@ define MODULE_PREBUILD_acme
 export NGX_ACME_STATE_PREFIX=/var/cache/nginx \&\& \
 export RUSTFLAGS='-Ctarget-feature=-crt-static' \&\& \
 cd $$builddir \&\& \
-mkdir .cargo \&\& \
+mkdir -p .cargo \&\& \
 echo '[source.crates-io]' > .cargo/config.toml \&\& \
 echo 'replace-with = "vendored-sources"' >> .cargo/config.toml \&\& \
 echo '[source.vendored-sources]' >> .cargo/config.toml \&\& \
