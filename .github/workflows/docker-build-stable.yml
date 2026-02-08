@@ -43,7 +43,6 @@ jobs:
       - name: Install Development Tools
         run: |
           apt-get install -y \
-          libssl-dev \
           cmake \
           lsb-release \
           libxml2-utils \
@@ -51,21 +50,12 @@ jobs:
           devscripts \
           quilt \
           git \
-          libpcre2-dev \
-          libmaxminddb-dev \
-          libgd-dev \
-          libedit-dev \
-          libxml2-dev \
-          libxslt-dev \
-          libre2-dev \
-          libc-ares-dev \
-          libperl-dev \
-          libkrb5-dev \
-          libgeoip-dev \
-          libyaml-cpp-dev \
-          libboost-dev \
-          libunwind-dev \
           golang
+
+      - name: Install Rust toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.86.0 --profile minimal
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: build boringssl
         working-directory: debian/boringssl
@@ -90,7 +80,24 @@ jobs:
 
       - name: build all
         working-directory: debian
-        run: make $TARGETS
+        run: |
+          for target in $TARGETS; do
+            case $target in
+              base)
+                NGINX_VERSION=$(make --eval 'nv:; @echo $(BASE_VERSION)' nv)
+                make rules-$target
+                mk-build-deps --install --tool="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes" \
+                  debuild-$target/nginx-${NGINX_VERSION}/debian/control
+                ;;
+              *)
+                NGINX_VERSION=$(make --eval 'nv:; @echo $(BASE_VERSION)' nv)
+                make rules-$target
+                mk-build-deps --install --tool="apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes" \
+                  debuild-$target/nginx-${NGINX_VERSION}/debian/control
+                ;;
+            esac
+            make $target
+          done
 
       - name: Move Files
         working-directory: debian
@@ -152,7 +159,7 @@ jobs:
           (dnf install -y epel-release 'dnf-command(config-manager)' || dnf install -y epol-release 'dnf-command(config-manager)') || true
           if [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-almalinux8-amd64" ]]; then
             dnf config-manager --set-enabled powertools
-            dnf -y install gcc-toolset-11-gcc-c++            
+            dnf -y install gcc-toolset-11-gcc-c++
           elif [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-almalinux9-amd64" ]]; then
             dnf config-manager --set-enabled crb
           elif [[ ${{ matrix.os }} == "ghcr.io/wy414012/pkg-oss:latest-almalinux10-amd64" ]]; then
@@ -164,40 +171,17 @@ jobs:
         run: |
           dnf -y install \
               git \
-              gcc \
-              gcc-c++ \
               make \
               rpm-build \
               tar \
               golang \
               cmake \
-              libunwind-devel \
-              pcre2-devel \
-              krb5-devel \
-              libedit \
-              systemd \
-              libxml2-devel \
-              libxslt-devel \
-              gd-devel \
-              libmaxminddb \
-              perl-ExtUtils-Embed \
-              perl-devel \
-              c-ares-devel \
-              openssl-devel \
-              re2-devel \
-              boost-devel \
-              libstdc++-devel \
-              yaml-cpp-devel \
-              rake \
-              brotli-devel \
-              which \
-              libatomic \
-              libedit-devel \
-              libmaxminddb-devel \
-              libstdc++-static \
-              lua-devel \
-              perl-macros \
-              xz
+              'dnf-command(builddep)'
+
+      - name: Install Rust toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.86.0 --profile minimal
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: build boringssl
         working-directory: rpm/boringssl
@@ -210,7 +194,7 @@ jobs:
           fi
           if [[ "${{ matrix.os }}" == "ghcr.io/wy414012/pkg-oss:latest-opencloudos9-amd64" ]]; then
           sed -i 's/-Werror/-Werror -Wno-array-bounds/' CMakeLists.txt
-          fi      
+          fi
           grep -rl "OpenSSL 1.1.1 (compatible; BoringSSL)". | xargs sed -i "s/OpenSSL 1.1.1 (compatible; BoringSSL)/BoringSSL Version_GitHash:$(git log --pretty=format:"%h" -n1) Build_Date:$(date +"%Y-%m-%d %H:%M:%S") (compatible; BoringSSL)/g"
           mkdir build && \
           cd build && \
@@ -230,7 +214,20 @@ jobs:
 
       - name: build all
         working-directory: rpm/SPECS
-        run: make $TARGETS
+        run: |
+          for target in $TARGETS; do
+            case $target in
+              base)
+                spec="nginx.spec"
+                ;;
+              *)
+                spec="nginx-$target.spec"
+                ;;
+            esac
+            make $spec
+            dnf -y builddep ./${spec}
+            make $target
+          done
 
       - name: upload artifact
         uses: actions/upload-artifact@v4
