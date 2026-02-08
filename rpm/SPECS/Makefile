@@ -116,6 +116,8 @@ BASE_CONFIGURE_ARGS+= \
 	--with-stream_proxy_protocol_vendor_module
 endif
 
+include $(CONTRIB)/attestation.mak
+
 export CR=\\n
 
 modname = $(shell echo $1 | tr '-' '_')
@@ -148,10 +150,11 @@ $(SRCPATH)/$(BASE_SRC):
 	cd $(CONTRIB) && make .sum-nginx$(BASE_SUFFIX)
 	cd $(SRCPATH) && ln -s $(CONTRIB)/tarballs/$(BASE_SRC) $(BASE_SRC)
 
-base:	nginx.spec $(SRCPATH)/$(BASE_SRC)
+base:	nginx.spec $(SRCPATH)/$(BASE_SRC) attest-base
 	@echo "===> Building base package" ; \
+	BUILDROOT=`rpmbuild -bc --short-circuit -D "_topdir \`pwd\`/../" -D "__spec_build_pre echo bdir=%{_builddir}; exit 0" nginx$(BASE_SUFFIX).spec | grep ^bdir= | cut -d'=' -f 2` ; \
 	$(SHELL) -c "time -p rpmbuild --noclean -D \"_topdir `pwd`/../\" -ba nginx$(BASE_SUFFIX).spec" && \
-	ln -s ../BUILD/nginx$(BASE_SUFFIX)-$(BASE_VERSION)/objs base
+	ln -s $$BUILDROOT/nginx$(BASE_SUFFIX)-$(BASE_VERSION)/objs base
 
 nginx.rpm-changelog:
 	@echo "===> Generating $@"
@@ -192,15 +195,19 @@ endif
 	}
 
 .deps-module-%:
+	if [ -n "$(MODULE_CONTRIB_DEPS_$*)" ]; then \
+	   cd $(CONTRIB) && make $(foreach dep,$(MODULE_CONTRIB_DEPS_$*),.sum-$(dep)); \
+	fi; \
 	touch $@
 
-module-%: nginx-module-%.spec check-compat-% $(SRCPATH)/$(BASE_SRC) .deps-module-%
+module-%: nginx-module-%.spec check-compat-% $(SRCPATH)/$(BASE_SRC) .deps-module-% attest-module-%
 	@if [ -e nginx-$@.skip ]; then \
 	    echo "---> Skipping nginx-$@ package (`cat nginx-$@.skip`)" ; \
 	else \
 	    echo "===> Building nginx-$@ package" ; \
+	    BUILDROOT=`rpmbuild -bc --short-circuit -D "_topdir \`pwd\`/../" -D "__spec_build_pre echo bdir=%{_builddir}; exit 0" nginx-$@.spec | grep ^bdir= | cut -d'=' -f 2` ; \
 	    $(SHELL) -c "time -p rpmbuild --noclean -D \"_topdir `pwd`/../\" -ba nginx-$@.spec" && \
-	    ln -s ../BUILD/$(MODULE_PACKAGE_PREFIX)-$*-$(BASE_VERSION)/objs $@ ; \
+	    ln -s $$BUILDROOT/$(MODULE_PACKAGE_PREFIX)-$*-$(BASE_VERSION)/objs $@ ; \
 	fi
 
 nginx-module-%.rpm-changelog:
@@ -250,7 +257,7 @@ nginx-module-%.spec: nginx-module-%.rpm-changelog
 		patches="$${patches}\n$${s}" ; \
 		s="`printf "cd %%{bdir}/$${bdn}"`" ; \
 		preppatches="$${preppatches}\n$${s}" ; \
-		s="`printf "%%patch%d -p1" $${i}`" ; \
+		s="`printf "%%patch -P%d -p1" $${i}`" ; \
 		preppatches="$${preppatches}\n$${s}" ; \
 		i=$$(($${i}+1)) ; \
 	done ; \
@@ -319,8 +326,8 @@ check-compat-%:
 		fi ; \
 		;; \
 		geoip) \
-		if [ `rpm --eval '0%{?rhel}'` -ge 8 ] || [ `rpm --eval '0%{?amzn}'` -gt 2 ] || [ `rpm --eval '0%{?oc}'` -ge 8 ] || [ `rpm --eval '0%{?tencentos}'` -gt 2 ]; then \
-			echo "GeoIP can not be build on RHEL/CentOS >= 8 or Amazon Linux >2" > \
+		if [ `rpm --eval '0%{?rhel}'` -ge 8 ] || [ `rpm --eval '0%{?amzn}'` -gt 2 ] || [ `rpm --eval '0%{?oc}'` -ge 8 ] || [ `rpm --eval '0%{?tencentos}'` -gt 2 ] || [ `rpm --eval '0%{?suse_version}'` -ge 1600 ]; then \
+			echo "GeoIP can not be build on RHEL/CentOS >= 8 or Amazon Linux >2 or SLES >= 16" > \
 			nginx-module-$${module}.skip ; \
 			exit ; \
 		fi ; \
@@ -347,8 +354,8 @@ check-compat-%:
 		fi ; \
 		;; \
 		otel) \
-		if [ "`rpm --eval '0%{?suse_version}'`" -gt 0 ]; then \
-			echo "otel can not be built on SLES due to absence of re2" > \
+		if [`rpm --eval '0%{?suse_version}'` -gt 0 -a `rpm --eval '0%{?suse_version}'` -lt 1500 ]; then \
+			echo "otel can not be built on SLES < 15 due to absence of re2" > \
 			nginx-module-$${module}.skip ; \
 			exit ; \
 		fi ; \
@@ -445,6 +452,7 @@ clean:
 	@rm -f $(BASE_SRC) $(SRCPATH)/$(BASE_SRC)
 	@rm -f nginx.rpm-changelog nginx-*.rpm-changelog nginx-module-*.rpm-changelog
 	@rm -f .deps-module-*
+	@rm -f attest-base attest-module-*
 	@find $(SRCPATH)/ -type l -delete
 
 .PHONY:	default list list-base list-all-modules list-base-modules all modules specs test test-debug clean
