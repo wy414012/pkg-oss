@@ -40,7 +40,7 @@ jobs:
       - name: Update apt
         run: apt-get update
 
-      - name: Install build -tool
+      - name: Install Development Tools
         run: |
           apt-get install -y \
           libssl-dev \
@@ -79,29 +79,18 @@ jobs:
           cmake -DOPENSSL_SMALL=1 -DCMAKE_BUILD_TYPE=Release .. && \
           make -j $(nproc)
 
+      - name: set build targets
+        working-directory: debian
+        run: |
+          targets="base"
+          for target in $(make list-all-modules | cut -d ' ' -f 1); do
+            targets="$targets module-$target";
+          done
+          echo TARGETS=$targets >> $GITHUB_ENV
+
       - name: build all
         working-directory: debian
-        run: | 
-          make \
-          base \
-          module-auth-spnego \
-          module-brotli \
-          module-encrypted-session \
-          module-fips-check \
-          module-geoip2 \
-          module-geoip \
-          module-headers-more \
-          module-image-filter \
-          module-lua \
-          module-ndk \
-          module-njs \
-          module-otel \
-          module-passenger \
-          module-perl \
-          module-rtmp \
-          module-set-misc \
-          module-subs-filter \
-          module-xslt
+        run: make $TARGETS
 
       - name: Move Files
         working-directory: debian
@@ -228,29 +217,20 @@ jobs:
           cmake -DOPENSSL_SMALL=1 -DCMAKE_BUILD_TYPE=Release .. && \
           make -j $(nproc)
 
-      - name: build all
+      - name: set build targets
         working-directory: rpm/SPECS
         run: |
-          make \
-          base \
-          module-auth-spnego \
-          module-brotli \
-          module-encrypted-session \
-          module-fips-check \
-          module-geoip2 \
-          module-geoip \
-          module-headers-more \
-          module-image-filter \
-          module-lua \
-          module-ndk \
-          module-njs \
-          module-otel \
-          module-passenger \
-          module-perl \
-          module-rtmp \
-          module-set-misc \
-          module-subs-filter \
-          module-xslt
+          targets="base"
+          for target in $(make list-all-modules | cut -d ' ' -f 1); do
+            if [ "$target" != "geoip" ]; then
+              targets="$targets module-$target";
+            fi
+          done
+          echo TARGETS=$targets >> $GITHUB_ENV
+
+      - name: build all
+        working-directory: rpm/SPECS
+        run: make $TARGETS
 
       - name: upload artifact
         uses: actions/upload-artifact@v4
