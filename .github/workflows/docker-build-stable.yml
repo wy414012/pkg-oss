@@ -53,9 +53,9 @@ jobs:
           golang
 
       - name: Install Rust toolchain
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.86.0 --profile minimal
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: 1.86.0
 
       - name: build boringssl
         working-directory: debian/boringssl
@@ -179,9 +179,9 @@ jobs:
               'dnf-command(builddep)'
 
       - name: Install Rust toolchain
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.86.0 --profile minimal
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: 1.86.0
 
       - name: build boringssl
         working-directory: rpm/boringssl
@@ -280,6 +280,11 @@ jobs:
             date
             grep
             sed
+            rustup
+
+      - name: Install Rust toolchain
+        shell: alpine.sh {0}
+        run: rustup-init --default-toolchain 1.86.0 --profile minimal -y
 
       - name: set build ${{ matrix.target }} 
         shell: alpine.sh {0}
